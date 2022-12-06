@@ -1,21 +1,6 @@
 # 目录
 
-- [Contents](#contents)
-  - [DETR description](#detr-description)
-  - [Model architecture](#model-architecture)
-  - [Dataset](#dataset)
-  - [Environment requirements](#environment-requirements)
-  - [Quick start](#quick-start)
-  - [Script Description](#script-description)
-    - [Script and Sample Code](#script-and-sample-code)
-    - [Script Parameters](#script-parameters)
-    - [Training Process](#training-process)
-    - [Evaluation Process](#evaluation-process)
-    - [Export MINDIR](#export-mindir)
-  - [Model Description](#model-description)
-    - [Training Performance on GPU](#training-performance-gpu)
-  - [Description of Random Situation](#description-of-random-situation)
-  - [ModelZoo Homepage](#modelzoo-homepage)
+[TOC]
 
 ## [DETR描述](#contents)
 
