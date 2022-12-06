@@ -34,8 +34,8 @@ data_path=$(get_real_path $2)
 anno_path=$(get_real_path $3)
 device_id=0
 min_size=800
-max_size=1333
-tgt_size=1344  # "(max_size/32+1)*32"
+max_size=1280
+tgt_size=1280
 
 if [ $# -eq 4 ]; then
     device_id=$4

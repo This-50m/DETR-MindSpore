@@ -110,9 +110,8 @@ def main(args):
         print('cast to float16')
 
     bs = args.batch_size
-    tgt_size = int(args.max_size / 32 + 1) * 32
-    input_arr = Tensor(np.random.rand(bs, 3, tgt_size, tgt_size), ms.float32)
-    mask_arr = Tensor(np.zeros([bs, tgt_size, tgt_size]), ms.float32)
+    input_arr = Tensor(np.random.rand(bs, 3, args.max_size, args.max_size), ms.float32)
+    mask_arr = Tensor(np.zeros([bs, args.max_size, args.max_size]), ms.float32)
 
     # file_format choose in ["AIR", "MINDIR"]
     export(net, input_arr, mask_arr, file_name=args.file_name, file_format=args.file_format)
@@ -127,7 +126,8 @@ if __name__ == '__main__':
                  --device_target="Ascend" \
                  --batch_size=1 \
                  --file_name='detr_bs1' \
-                 --file_format='MINDIR'
+                 --file_format='MINDIR' \
+                 --max_size=1280 
     """
     args = prepare_args()
     main(args)
