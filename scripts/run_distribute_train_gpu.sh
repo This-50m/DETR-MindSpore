@@ -16,7 +16,7 @@
 
 if [ $# != 4 ]
 then
-    echo "Usage: bash scripts/run_distribute_train_ascend.sh [DATASET_PATH] [BACKBONE_PRETRAIN] [CONTEXT_MODE]"
+    echo "Usage: bash scripts/run_distribute_train_gpu.sh [DATASET_PATH] [BACKBONE_PRETRAIN] [CONTEXT_MODE]"
 exit 1
 fi
 DATASET_PATH=$2

@@ -53,10 +53,15 @@ DETR将输入图像首先通过ResNet特征提取模块，提取特征信息，�
 - 硬件（Ascend处理器）
   - 准备Ascend处理器搭建硬件环境。
 - 框架
-  - [MindSpore](https://www.mindspore.cn/tutorials/zh-CN/master/index.html)
+  - [MindSpore](https://www.mindspore.cn/tutorials/zh-CN/master/index.html)>1.9
 - 如需查看详情，请参见如下资源：
   - [MindSpore教程](https://www.mindspore.cn/docs/zh-CN/master/index.html)
   - [MindSpore Python API](https://www.mindspore.cn/docs/zh-CN/master/index.html)
+- 其他
+  - 若执行Ascend静态图模式，则需要`mindspore.scipy.optimize.linear_sum_assignment`算子
+  - GPU只支持动态图模式
+  - Ascend支持动态图和静态图模式
+
 
 ## [快速开始](#contents)
 
@@ -67,48 +72,84 @@ DETR将输入图像首先通过ResNet特征提取模块，提取特征信息，�
 #### 训练
 
 ```shell
-# standalone train
-bash ./scripts/run_standalone_train_gpu.sh
+# 单卡训练（不建议）
+bash scripts/run_standalone_train_ascend.sh [DEVICE_ID] [DATASET_PATH] [BACKBONE_PRETRAIN] [CONTEXT_MODE]
 
-# distribute train
-bash ./scripts/run_distribute_train_gpu.sh [DEVICE_NUM] [CFG_PATH] [SAVE_PATH] [BACKBONE_PRETRAIN] [DATASET_PATH]
+# 8卡训练
+bash scripts/run_distribute_train_ascend.sh [RANK_TABLE_FILE] [DATASET_PATH] [BACKBONE_PRETRAIN] [CONTEXT_MODE]
 ```
 
-Example:
+案例:
 
 ```shell
-# standalone train
-# DEVICE_ID - device number for training
-# CFG_PATH - path to config
-# SAVE_PATH - path to save logs and checkpoints
-# BACKBONE_PRETRAIN - path to pretrained backbone
-# DATASET_PATH - path to COCO dataset
-bash ./scripts/run_standalone_train_gpu.sh 0 ./default_config.yaml /path/to/output /path/to/resnet50_pretrain.ckpt /path/to/coco
+# 8卡训练
+# RANK_TABLE_FILE - 分布式json文件
+# DATASET_PATH - COCO数据集目录
+# BACKBONE_PRETRAIN - backbone预训练权重
+# CONTEXT_MODE - 执行模式（GRAPH、PYNATIVE）
 
-# distribute train (8p)
-# DEVICE_NUM - number of devices for training
-# other parameters as for standalone train
-bash ./scripts/run_distribute_train_gpu.sh 8 ./default_config.yaml /path/to/output /path/to/resnet50_pretrain.ckpt /path/to/coco
+bash scripts/run_distribute_train_ascend.sh hccl_8p_01234567_127.0.0.1.json /opt/npu/data/coco2017 ms_resnet_50.ckpt GRAPH
 ```
 
 #### 验证
 
 ```shell
-# evaluate
-bash ./scripts/run_eval_ascend.sh [DEVICE_ID] [CFG_PATH] [SAVE_PATH] [CKPT_PATH] [DATASET_PATH]
+# 验证
+bash scripts/run_eval_ascend.sh [DATASET_PATH] [RESUME] [DEVICE_TARGET] [DEVICE_ID] [MAX_SIZE]
 ```
 
-Example:
+案例:
 
 ```shell
-# evaluate
-# DEVICE_ID - device number for evaluating
-# CFG_PATH - path to config
-# SAVE_PATH - path to save logs
-# CKPT_PATH - path to ckpt for evaluation
-# DATASET_PATH - path to COCO dataset
-bash ./scripts/run_eval_gpu.sh 0 ./default_config.yaml /path/to/output /path/to/ckpt /path/to/coco  
+# 验证
+# DATASET_PATH - 数据位置
+# RESUME - 权重路径
+# DEVICE_TARGET - 设备
+# DEVICE_ID - 设备ID
+# MAX_SIZE - 图片最大尺寸
+bash scripts/run_distribute_train_ascend.sh /opt/npu/data/coco2017 ./ms_detr_sota.ckpt "Ascend" 0 1280
 ```
+
+### [GPU处理器环境运行](#contents)
+
+#### 训练
+
+```shell
+# 8卡训练
+bash scripts/run_distribute_train_gpu.sh [DATASET_PATH] [BACKBONE_PRETRAIN] [CONTEXT_MODE]
+```
+
+案例:
+
+```shell
+# 8卡训练
+# DATASET_PATH - 数据位置
+# BACKBONE_PRETRAIN - backbone预训练权重
+# CONTEXT_MODE - 执行模式，目前只支持动态图
+
+bash scripts/run_distribute_train_gpu.sh /opt/npu/data/coco2017 ms_resnet_50.ckpt PYNATIVE
+```
+
+#### 验证
+
+```shell
+# 验证
+bash scripts/run_eval_ascend.sh [DATASET_PATH] [RESUME] [DEVICE_TARGET] [DEVICE_ID] [MAX_SIZE]
+```
+
+案例:
+
+```shell
+# 验证
+# DATASET_PATH - 数据位置
+# RESUME - 权重路径
+# DEVICE_TARGET - 设备
+# DEVICE_ID - 设备ID
+# MAX_SIZE - 图片最大尺寸
+bash scripts/run_eval_ascend.sh /opt/npu/data/coco2017 ./ms_detr_sota.ckpt "GPU" 0 1280
+```
+
+
 
 ## [脚本说明](#contents)
 
@@ -160,14 +201,14 @@ bash ./scripts/run_eval_gpu.sh 0 ./default_config.yaml /path/to/output /path/to/
 ### [脚本参数](#contents)
 
 ```text
-"lr": 0.0001,                                   # learning rate
-"lr_backbone": 0.00001,                         # learning rate for pretrained backbone
-"epochs": 300,                                  # number of training epochs
-"lr_drop": 200,                                 # epoch`s number for decay lr
+"lr": 0.0001,                                   # 学习率
+"lr_backbone": 0.00001,                         # backbone的学习率
+"epochs": 300,                                  # 总轮次
+"lr_drop": 200,                                 # 学习率下降轮次
 "weight_decay": 0.0001,                         # weight decay
-"batch_size": 4,                                # batch size
-"clip_max_norm": 0.1,                           # max norm of gradients
-"max_size": 960                             	# max image size
+"batch_size": 4,                                # 批次
+"clip_max_norm": 0.1,                           # 梯度裁剪
+"max_size": 960                             	# 图片最大尺寸
 ```
 
 ### [训练过程](#contents)
@@ -177,19 +218,26 @@ bash ./scripts/run_eval_gpu.sh 0 ./default_config.yaml /path/to/output /path/to/
 ##### 分布式训练 (8p)
 
 ```shell
-# DEVICE_NUM - number of devices for training (8)
-# other parameters as for standalone train
-bash ./scripts/run_distribute_train_gpu.sh 8 ./default_config.yaml /path/to/output /path/to/resnet50_pretrain.ckpt /path/to/coco
+bash scripts/run_distribute_train_ascend.sh hccl_8p_01234567_127.0.0.1.json /opt/npu/data/coco2017 ms_resnet_50.ckpt GRAPH
 ```
 
-Logs will be saved to `/path/to/outputs/train0.log`
+日志位置： `outputs/train0.log`
 
-Result:
+训练过程：
 
 ```text
-...
-
-...
+epoch[0/300], iter[0/3664], loss:68.2397, fps:0.02 imgs/sec, lr:[1e-05/0.0001]
+epoch[0/300], iter[73/3664], loss:47.9165, fps:4.67 imgs/sec, lr:[1e-05/0.0001]
+epoch[0/300], iter[146/3664], loss:41.4048, fps:4.54 imgs/sec, lr:[1e-05/0.0001]
+epoch[0/300], iter[219/3664], loss:38.1338, fps:4.54 imgs/sec, lr:[1e-05/0.0001]
+epoch[0/300], iter[292/3664], loss:36.3088, fps:4.57 imgs/sec, lr:[1e-05/0.0001]
+epoch[0/300], iter[365/3664], loss:35.1795, fps:4.74 imgs/sec, lr:[1e-05/0.0001]
+epoch[0/300], iter[438/3664], loss:34.1690, fps:4.66 imgs/sec, lr:[1e-05/0.0001]
+epoch[0/300], iter[511/3664], loss:33.3878, fps:4.64 imgs/sec, lr:[1e-05/0.0001]
+epoch[0/300], iter[584/3664], loss:32.9090, fps:4.61 imgs/sec, lr:[1e-05/0.0001]
+epoch[0/300], iter[657/3664], loss:32.4188, fps:4.64 imgs/sec, lr:[1e-05/0.0001]
+epoch[0/300], iter[730/3664], loss:32.0672, fps:4.67 imgs/sec, lr:[1e-05/0.0001]
+epoch[0/300], iter[803/3664], loss:31.6295, fps:4.59 imgs/sec, lr:[1e-05/0.0001]
 ```
 
 ### [评估过程](#contents)
@@ -197,23 +245,10 @@ Result:
 #### Ascend评估
 
 ```shell
-bash ./scripts/run_eval_gpu.sh [DEVICE_ID] [CFG_PATH] [SAVE_PATH] [CKPT_PATH] [DATASET_PATH]
+bash scripts/run_eval_ascend.sh /opt/npu/data/coco2017 ./ms_detr_sota.ckpt "Ascend" 0 1280
 ```
 
-Example:
-
-```shell
-# DEVICE_ID - device number for evaluating (0)
-# CFG_PATH - path to config (./default_config.yaml)
-# SAVE_PATH - path to save logs (/path/to/output)
-# CKPT_PATH - path to ckpt for evaluation (/path/to/ckpt)
-# DATASET_PATH - path to COCO dataset (/path/to/coco)
-bash ./scripts/run_eval_gpu.sh 0 ./default_config.yaml /path/to/output /path/to/ckpt /path/to/coco
-```
-
-Logs will be saved to `/path/to/output/log_eval.txt`.
-
-Result:
+结果:
 
 ```text
  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.409
@@ -232,9 +267,7 @@ Result:
 
 ### [导出MINDIR](#contents)
 
-If you want to infer the network on Ascend 310, you should convert the model to MINDIR.
 
-#### GPU
 
 ```shell
 python export.py --resume=ms_detr_sota.ckpt \
@@ -243,10 +276,11 @@ python export.py --resume=ms_detr_sota.ckpt \
                  --device_target="Ascend" \
                  --batch_size=1 \
                  --file_name='detr_bs1' \
-                 --file_format='MINDIR'
+                 --file_format='MINDIR'\
+                 --max_size=1280
 ```
 
-Logs will be saved to parent dir of ckpt, converted model will have the same name as ckpt except extension.
+
 
 ## [模型描述](#contents)
 

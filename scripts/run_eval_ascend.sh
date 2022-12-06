@@ -15,7 +15,7 @@
 # ============================================================================
 if [ $# != 5 ]
 then
-    echo "Usage: bash scripts/run_distribute_train_ascend.sh [DATASET_PATH] [RESUME] [DEVICE_TARGET] [DEVICE_ID] [MAX_SIZE]"
+    echo "Usage: bash scripts/run_eval_ascend.sh [DATASET_PATH] [RESUME] [DEVICE_TARGET] [DEVICE_ID] [MAX_SIZE]"
 exit 1
 fi
 

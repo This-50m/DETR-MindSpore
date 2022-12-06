@@ -19,7 +19,7 @@ export GLOG_v=3
 
 if [ $# != 3]
 then
-    echo "Usage: bash scripts/run_distribute_train_ascend.sh [DEVICE_ID] [DATASET_PATH] [BACKBONE_PRETRAIN] [CONTEXT_MODE]"
+    echo "Usage: bash scripts/run_standalone_train_ascend.sh [DEVICE_ID] [DATASET_PATH] [BACKBONE_PRETRAIN] [CONTEXT_MODE]"
 exit 1
 fi
 
