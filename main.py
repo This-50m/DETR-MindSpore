@@ -34,13 +34,11 @@ from src.tools.average_meter import AverageMeter
 def main():
     args = prepare_args()
 
-    if args.device_target == 'Ascend':
-        # context.set_context(mode=context.GRAPH_MODE, device_target=args.device_target)
-        context.set_context(mode=context.PYNATIVE_MODE, device_target=args.device_target)
-    elif args.device_target == 'GPU':
-        context.set_context(mode=context.PYNATIVE_MODE, device_target=args.device_target)
+    if args.context_mode == "GRAPH":
+        mode = context.GRAPH_MODE
     else:
-        raise ValueError
+        mode = context.PYNATIVE_MODE
+    context.set_context(mode=mode, device_target=args.device_target)
     # init seed
     set_seed(args.seed)
 
@@ -80,9 +78,14 @@ def main():
     # load pretrained weights
     if args.resume:
         ckpt = load_checkpoint(args.resume)
-        if 'net' in list(ckpt.keys())[0]:
-            ckpt = {k[4:]: v for k, v in ckpt.items()}
-        load_param_into_net(net, ckpt, strict_load=True)
+        new_ckpt = {}
+        for k, v in ckpt.items():
+            if 'optimizer.' in k:
+                k = k.replace('optimizer.', '')
+            if 'network.net.' in k:
+                k = k.replace('network.net.', '')
+            new_ckpt[k] = v
+        load_param_into_net(net, new_ckpt, strict_load=True)
         print('load pretrained weights checkpoint')
 
     data_dtype = ms.float32

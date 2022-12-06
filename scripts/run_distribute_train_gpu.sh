@@ -66,8 +66,16 @@ export RANK_SIZE=8
 #export DEPLOY_MODE=0
 
 mpirun --allow-run-as-root -n $RANK_SIZE --output-filename log_output --merge-stderr-to-stdout \
-	python main.py --coco_path=/home/mindspore/Datasets/COCO2017 --output_dir=outputs/ --mindrecord_dir=data/ --clip_max_norm=0.1 \
-	--dropout=0.1 --batch_size=2 --pretrained=ms_resnet_50.ckpt --epochs=300 --distributed=1 --device_target="GPU" &> log &
+	python main.py --coco_path=/home/mindspore/Datasets/COCO2017 \
+	                --output_dir=outputs/ --mindrecord_dir=data/ \
+	                --clip_max_norm=0.1 \
+	                --dropout=0.1 \
+	                --batch_size=2 \
+	                --pretrained=ms_resnet_50.ckpt \
+	                --epochs=300 \
+	                --distributed=1 \
+	                --context_mode="PYNATIVE" \
+	                --device_target="GPU" &> log &
 
 
 

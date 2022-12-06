@@ -107,7 +107,7 @@ class Resize(object):
         h, w, _ = img.shape
 
         nh, nw = get_size_with_aspect_ratio(img.shape, self.size, self.max_size)
-        resize_pad_img = cv2.resize(img, (nw, nh), cv2.INTER_CUBIC)
+        resize_pad_img = cv2.resize(img, (nw, nh), cv2.INTER_LINEAR)
 
         target = target.copy()
         # modify boxes

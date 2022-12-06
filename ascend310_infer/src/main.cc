@@ -134,7 +134,7 @@ int PadImageMask(const MSTensor &input, MSTensor *output1, MSTensor *output2) {
                      &imgMaskInfo,
                      FLAGS_TgtSize*FLAGS_TgtSize*4);
 
-    auto typeCast = TypeCast(DataType::kNumberTypeBool);
+    auto typeCast = TypeCast(DataType::kNumberTypeFloat32);
     Execute transformCast(typeCast);
     ret = transformCast(imgMask, output2);
     if (ret != kSuccess) {

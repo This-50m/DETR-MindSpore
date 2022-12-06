@@ -24,8 +24,6 @@ from mindspore.common import initializer as init
 from src.DETR.init_weights import KaimingUniform, UniformBias
 from src.DETR.util import box_cxcywh_to_xyxy
 from src.DETR.backbone import build_backbone
-from src.DETR.matcher import build_matcher as ascend_build_matcher
-from src.DETR.matcher_np import build_matcher as gpu_build_matcher
 from src.DETR.transformer import build_transformer
 from src.DETR.criterion import SetCriterion
 
@@ -155,12 +153,12 @@ def build(args):
         num_queries=args.num_queries,
         aux_loss=args.aux_loss
     )
-    if args.device_target == 'Ascend':
-        # TODO
-        # matcher = ascend_build_matcher(args)
-        matcher = gpu_build_matcher(args)
+    if args.device_target == 'Ascend' and args.context_mode == "GRAPH":
+        from src.DETR.matcher import build_matcher
+        matcher = build_matcher(args)
     else:
-        matcher = gpu_build_matcher(args)
+        from src.DETR.matcher_np import build_matcher
+        matcher = build_matcher(args)
     weight_dict = {'loss_ce': 1, 'loss_bbox': args.bbox_loss_coef, 'loss_giou': args.giou_loss_coef}
     criterion = SetCriterion(args,
                              num_classes=num_classes,

@@ -35,6 +35,7 @@ def prepare_args():
     # context
     parser.add_argument('--device_id', default=0, type=int, help='which device')
     parser.add_argument('--device_target', default="GPU", type=str)
+    parser.add_argument('--context_mode', default="GRAPH", type=str)
 
     # dataset parameters
     parser.add_argument('--dataset_file', default='coco')

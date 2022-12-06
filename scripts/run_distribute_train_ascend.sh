@@ -49,6 +49,7 @@ for((i=0;i<$((RANK_SIZE));i++));
                --pretrained=ms_resnet_50.ckpt \
                --epochs=300 \
                --distributed=1 \
+               --context_mode="GRAPH" \
                --device_target="Ascend" \
                --device_id=${i} >> outputs/train${i}.log 2>&1 &
 

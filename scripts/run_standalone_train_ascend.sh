@@ -36,6 +36,7 @@ python train.py --coco_path=/data/coco2017 \
                 --dropout=0.1 \
                 --pretrained=ms_resnet_50.ckpt \
                 --epochs=300 \
+                --context_mode="GRAPH" \
                 --device_target="Ascend" \
                 --device_id=3 > ${DIR}/train.log 2>&1
 
