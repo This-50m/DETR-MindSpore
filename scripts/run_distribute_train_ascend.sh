@@ -16,13 +16,23 @@
 
 # set Ascend910 env
 source scripts/env_npu.sh;
-
 export GLOG_v=3
+
+if [ $# != 4 ]
+then
+    echo "Usage: bash scripts/run_distribute_train_ascend.sh [RANK_TABLE_FILE] [DATASET_PATH] [BACKBONE_PRETRAIN] [CONTEXT_MODE]"
+exit 1
+fi
+
+# bash scripts/run_distribute_train_ascend.sh hccl_8p_01234567_127.0.0.1.json /opt/npu/data/coco2017 ms_resnet_50.ckpt GRAPH"
 
 # distributed training json about device ip address
 export RANK_TABLE_FILE=$1
 export MINDSPORE_HCCL_CONFIG_PATH=$RANK_TABLE_FILE
-# ensure GPU_8P_log_336 dir exists
+DATASET_PATH=$2
+BACKBONE_PRETRAIN=$3
+CONTEXT_MODE=$4
+
 DIR=./outputs
 if [[ ! -d "$DIR" ]]; then
     mkdir $DIR
@@ -40,16 +50,16 @@ for((i=0;i<$((RANK_SIZE));i++));
     PID_START=$((KERNEL_NUM*i))
     PID_END=$((PID_START+KERNEL_NUM-1))
     taskset -c ${PID_START}-${PID_END} \
-      python main.py --coco_path=/opt/npu/data/coco2017 \
+      python main.py --coco_path=${DATASET_PATH} \
                --output_dir=outputs/ \
                --mindrecord_dir=data/ \
                --clip_max_norm=0.1 \
                --no_aux_loss \
                --dropout=0.1 \
-               --pretrained=ms_resnet_50.ckpt \
+               --pretrained=${BACKBONE_PRETRAIN} \
                --epochs=300 \
                --distributed=1 \
-               --context_mode="GRAPH" \
+               --context_mode=${CONTEXT_MODE} \
                --device_target="Ascend" \
                --device_id=${i} >> outputs/train${i}.log 2>&1 &
 

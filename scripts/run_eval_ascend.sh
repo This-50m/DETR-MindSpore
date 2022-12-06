@@ -13,10 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
+if [ $# != 5 ]
+then
+    echo "Usage: bash scripts/run_distribute_train_ascend.sh [DATASET_PATH] [RESUME] [DEVICE_TARGET] [DEVICE_ID] [MAX_SIZE]"
+exit 1
+fi
 
-python eval.py --coco_path=/data/coco2017 \
+DATASET_PATH=$1
+RESUME=$2
+DEVICE_TARGET=$3
+DEVICE_ID=$4
+MAX_SIZE=$4
+
+python eval.py --coco_path=${DATASET_PATH} \
                --output_dir=outputs/ \
                --mindrecord_dir=data/ \
                --no_aux_loss \
-               --device_id=0 \
-               --device_target="Ascend"
+               --device_id=${DEVICE_ID} \
+               --device_target=${DEVICE_TARGET} \
+               --resume=${RESUME} \
+               --max_size=${MAX_SIZE}

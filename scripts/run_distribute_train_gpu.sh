@@ -14,8 +14,15 @@
 # limitations under the License.
 # ============================================================================
 
-# set Ascend910 env
-#source scripts/env_npu.sh;
+if [ $# != 4 ]
+then
+    echo "Usage: bash scripts/run_distribute_train_ascend.sh [DATASET_PATH] [BACKBONE_PRETRAIN] [CONTEXT_MODE]"
+exit 1
+fi
+DATASET_PATH=$2
+BACKBONE_PRETRAIN=$3
+CONTEXT_MODE=$4
+
 bootup_cache_server()
 {
   echo "Booting up cache server..."
@@ -66,15 +73,15 @@ export RANK_SIZE=8
 #export DEPLOY_MODE=0
 
 mpirun --allow-run-as-root -n $RANK_SIZE --output-filename log_output --merge-stderr-to-stdout \
-	python main.py --coco_path=/home/mindspore/Datasets/COCO2017 \
+	python main.py --coco_path=${DATASET_PATH} \
 	                --output_dir=outputs/ --mindrecord_dir=data/ \
 	                --clip_max_norm=0.1 \
 	                --dropout=0.1 \
 	                --batch_size=2 \
-	                --pretrained=ms_resnet_50.ckpt \
+	                --pretrained=${BACKBONE_PRETRAIN} \
 	                --epochs=300 \
 	                --distributed=1 \
-	                --context_mode="PYNATIVE" \
+	                --context_mode=${CONTEXT_MODE} \
 	                --device_target="GPU" &> log &
 
 

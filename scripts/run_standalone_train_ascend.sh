@@ -16,6 +16,17 @@
 
 source scripts/env_npu.sh;
 export GLOG_v=3
+
+if [ $# != 3]
+then
+    echo "Usage: bash scripts/run_distribute_train_ascend.sh [DEVICE_ID] [DATASET_PATH] [BACKBONE_PRETRAIN] [CONTEXT_MODE]"
+exit 1
+fi
+
+DEVICE_ID=$1
+DATASET_PATH=$2
+BACKBONE_PRETRAIN=$3
+CONTEXT_MODE=$4
 ################基础配置参数，需要模型审视修改##################
 # number of Ascend910 device
 export RANK_SIZE=1
@@ -28,16 +39,16 @@ if [[ ! -d "$DIR" ]]; then
 fi
 
 ################# strat training #################
-python train.py --coco_path=/data/coco2017 \
+python train.py --coco_path=${DATASET_PATH} \
                 --output_dir=outputs/ \
                 --mindrecord_dir=data/ \
                 --clip_max_norm=0.1 \
                 --no_aux_loss \
                 --dropout=0.1 \
-                --pretrained=ms_resnet_50.ckpt \
+                --pretrained=${BACKBONE_PRETRAIN} \
                 --epochs=300 \
-                --context_mode="GRAPH" \
+                --context_mode=${CONTEXT_MODE} \
                 --device_target="Ascend" \
-                --device_id=3 > ${DIR}/train.log 2>&1
+                --device_id=${DEVICE_ID} > ${DIR}/train.log 2>&1
 
 cat ${DIR}/train.log | grep loss > ${DIR}/train_loss.log
